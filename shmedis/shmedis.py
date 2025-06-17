@@ -219,7 +219,7 @@ class Shmedis:
 
         return sds.value
 
-    def set(self, key: bytes | str, value: bytes, ex: int = 0):
+    def set(self, key: bytes | str, value: bytes, ex: int = 0, nx: bool = False) -> bool:
         """
         Sets a key-value pair in shared memory with optional expiration time.
         Cost 11us per create
@@ -228,6 +228,7 @@ class Shmedis:
             key: The key to set, can be either bytes or string type
             value: The value to store as bytes
             ex: Expiration time in seconds (0 means no expiration)
+            nx: like redis set nx
 
         Notes:
             - Automatically handles key conversion from string to bytes
@@ -243,9 +244,11 @@ class Shmedis:
                 if (
                         old_sds.expire_time == 0
                         or old_sds.expire_time > time.time()
-                        or old_sds.can_overwrite(value)
                 ):
-                    create = False
+                    if nx:
+                        return False
+                    if old_sds.can_overwrite(value):
+                        create = False
 
             if not create:
                 old_sds.overwrite(self.shm.buf, value)
@@ -254,6 +257,8 @@ class Shmedis:
                 sds_ptr = self._alloc(new_sds.size)
                 new_sds.write(self.shm.buf, sds_ptr)
                 self.ht[key] = sds_ptr
+
+        return True
 
     def delete(self, key: bytes | str):
         """
