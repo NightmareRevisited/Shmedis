@@ -1,11 +1,11 @@
 import struct
 import time
-from typing import Optional
+from typing import Optional, Union
 
-from data_type import SDS, U32_SIZE
-from index_hash_table import IndexHashTable
-from lock import RawProcessRwLock
-from skip_list import SkipList
+from .data_type import SDS, U32_SIZE
+from .index_hash_table import IndexHashTable
+from .lock import RawProcessRwLock
+from .skip_list import SkipList
 
 try:
     from multiprocessing.shared_memory import SharedMemory
@@ -112,6 +112,9 @@ class Shmedis:
         del self.lock
         self.shm.close()
 
+    def unlink(self):
+        self.shm.unlink()
+
     @classmethod
     def _gen_fragment_start_key(cls, start_ptr: int) -> bytes:
         return f"inner:fg:start:{start_ptr}".encode("utf-8")
@@ -170,21 +173,28 @@ class Shmedis:
             - Inserts the merged fragment into skip list and updates hash table
         """
         end_ptr = ptr + size
-        while (left_ptr := self.ht[self._gen_fragment_end_key(ptr)]) is not None:
+        left_ptr = self.ht[self._gen_fragment_end_key(ptr)]
+
+        while left_ptr is not None:
             self.sl.delete((left_ptr, ptr))
             del self.ht[self._gen_fragment_start_key(left_ptr)]
             del self.ht[self._gen_fragment_end_key(ptr)]
             ptr = left_ptr
-        while (right_ptr := self.ht[self._gen_fragment_start_key(end_ptr)]) is not None:
+            left_ptr = self.ht[self._gen_fragment_end_key(ptr)]
+
+        right_ptr = self.ht[self._gen_fragment_start_key(end_ptr)]
+        while right_ptr is not None:
             self.sl.delete((end_ptr, right_ptr))
             del self.ht[self._gen_fragment_start_key(end_ptr)]
             del self.ht[self._gen_fragment_end_key(right_ptr)]
             end_ptr = right_ptr
+            right_ptr = self.ht[self._gen_fragment_start_key(end_ptr)]
+
         self.sl.insert((ptr, end_ptr))
         self.ht[self._gen_fragment_start_key(ptr)] = end_ptr
         self.ht[self._gen_fragment_end_key(end_ptr)] = ptr
 
-    def get(self, key: bytes | str) -> Optional[bytes]:
+    def get(self, key: Union[str, bytes]) -> Optional[bytes]:
         """
         Retrieves the value associated with the given key from shared memory.
         cost 5us per get
@@ -219,7 +229,7 @@ class Shmedis:
 
         return sds.value
 
-    def set(self, key: bytes | str, value: bytes, ex: int = 0, nx: bool = False) -> bool:
+    def set(self, key: Union[str, bytes], value: bytes, ex: int = 0, nx: bool = False) -> bool:
         """
         Sets a key-value pair in shared memory with optional expiration time.
         Cost 11us per create
@@ -251,7 +261,7 @@ class Shmedis:
                         create = False
 
             if not create:
-                old_sds.overwrite(self.shm.buf, value)
+                old_sds.overwrite(self.shm.buf, value, expire_seconds=ex)
             else:
                 new_sds = SDS.new(value, ex)
                 sds_ptr = self._alloc(new_sds.size)
@@ -260,7 +270,7 @@ class Shmedis:
 
         return True
 
-    def delete(self, key: bytes | str):
+    def delete(self, key: Union[str, bytes]):
         """
         Deletes the key-value pair from shared memory and frees the allocated space.
         Cost 60us per delete

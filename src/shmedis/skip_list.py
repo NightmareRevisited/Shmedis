@@ -5,7 +5,7 @@ import time
 from struct import unpack_from
 from typing import Optional, Tuple
 
-from shmedis.data_type import BOOL_SIZE, U16_SIZE, U32_SIZE
+from .data_type import BOOL_SIZE, U16_SIZE, U32_SIZE
 
 # Use '>' prefix for big-endian standard sizing.
 _LOGGER = logging.getLogger(__name__)

@@ -1,8 +1,9 @@
 import struct
+from typing import Union
 
 import xxhash
 
-from data_type import U64_SIZE
+from .data_type import U64_SIZE
 
 # Use '>' prefix for big-endian standard sizing.
 R_LOCK = 1
@@ -52,7 +53,7 @@ class IndexHashTable:
         self.slot_number = slot_number
         self.slot_size = int(len(buf) / slot_number)
 
-    def __getitem__(self, key: str | bytes):
+    def __getitem__(self, key: Union[str, bytes]):
         """
         Get the value associated with the given key from the hash table.
 
@@ -78,7 +79,7 @@ class IndexHashTable:
 
         return node_value
 
-    def __setitem__(self, key: str | bytes, new_value: int):
+    def __setitem__(self, key: Union[str, bytes], new_value: int):
         """
         Set the value associated with the given key in the hash table.
 
@@ -120,7 +121,7 @@ class IndexHashTable:
                 used_bytes + HashTableNode.size,
             )
 
-    def __delitem__(self, key: str | bytes):
+    def __delitem__(self, key: Union[str, bytes]):
         """
         Delete the key-value pair associated with the given key from the hash table.
 

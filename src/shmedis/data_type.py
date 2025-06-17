@@ -111,7 +111,7 @@ class SDS:
         new_length = len(new_value)
         return self.capacity >= new_length
 
-    def overwrite(self, buf: memoryview, new_value: bytes) -> bool:
+    def overwrite(self, buf: memoryview, new_value: bytes, expire_seconds: int = 0) -> bool:
         """
         Overwrites the existing value with new_value if it fits within current capacity
         Args:
@@ -120,5 +120,9 @@ class SDS:
         Returns:
             bool: True if write succeeded, False if new_value exceeds capacity
         """
+        if expire_seconds > 0:
+            expire_time = int(time.time() + expire_seconds)
+            struct.pack_into(f">I", buf, self.ptr + 3 * U32_SIZE, expire_time)
+
         struct.pack_into(f">{len(new_value)}s", buf, self.ptr + 4 * U32_SIZE, new_value)
         return True

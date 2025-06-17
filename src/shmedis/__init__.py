@@ -1,6 +1,9 @@
-from multiprocessing import resource_tracker
+from .core import Shmedis
 
-from shmedis.shmedis import Shmedis
+try:
+    from multiprocessing import resource_tracker
+except ImportError:
+    from shared_memory import resource_tracker
 
 
 def disable_shm_tracking():

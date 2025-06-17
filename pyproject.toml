@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "shmedis"
-version = "0.1.0"
+version = "0.3.8"
 description = "A redis-like cache based on POSIX shared memory."
 requires-python = ">=3.6"
 license = { text = "Apache-2.0" }
@@ -45,5 +45,8 @@ Issues = "https://github.com/NightmareRevisited/Shmedis/issues"
 platforms = ["darwin", "linux"]
 
 [tool.setuptools.packages.find]
-where = ["shmedis"]
-include = ["*"]
+where = ["src"]
+include = ["shmedis"]
+
+[tool.setuptools.package-dir]
+"" = "src"
