@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shmedis"
+version = "0.1.0"
+description = "A redis-like cache based on POSIX shared memory."
+requires-python = ">=3.6"
+license = { text = "Apache-2.0" }
+readme = "README.md"
+authors = [
+    { name = "NightmareRevisited", email = "cnythevile@gmail.com" }
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: POSIX :: Linux",
+]
+dependencies = [
+    "xxhash"
+]
+
+[project.optional-dependencies]
+legacy = [
+    "shared-memory38; python_version<'3.8'"
+]
+
+[project.urls]
+Homepage = "https://github.com/NightmareRevisited/Shmedis"
+Repository = "https://github.com/NightmareRevisited/Shmedis"
+Issues = "https://github.com/NightmareRevisited/Shmedis/issues"
+
+[tool.setuptools]
+platforms = ["darwin", "linux"]
+
+[tool.setuptools.packages.find]
+where = ["shmedis"]
+include = ["*"]
